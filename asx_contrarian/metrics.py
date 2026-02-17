@@ -139,7 +139,10 @@ def compute_sector_metrics(
         total_ret = (equity.iloc[-1] - sector_capital) / sector_capital
         n_days = len(equity)
         years = n_days / TRADING_DAYS_PER_YEAR if n_days > 0 else 1
-        ann_ret = (1 + total_ret) ** (1 / years) - 1 if years > 0 else 0.0
+        if years > 0 and (1 + total_ret) > 0:
+            ann_ret = (1 + total_ret) ** (1 / years) - 1
+        else:
+            ann_ret = -1.0 if total_ret < 0 else 0.0
 
         daily_rets = equity.pct_change().dropna()
         wins = [t for t in trades if t.net_pnl > 0]

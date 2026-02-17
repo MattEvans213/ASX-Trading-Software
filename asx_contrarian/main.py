@@ -85,7 +85,7 @@ def main() -> None:
 
     logger.info("Starting ASX contrarian backtest …")
     logger.info("  Period: %s → %s", bt_cfg.start_date, bt_cfg.end_date)
-    logger.info("  Capital: $%,.0f", bt_cfg.starting_capital)
+    logger.info("  Capital: $%s", f"{bt_cfg.starting_capital:,.0f}")
 
     # ── 1. Load & validate data ───────────────────────────────────────
     logger.info("Phase 1: Fetching data …")
