@@ -6,6 +6,7 @@ Outputs:
   2. trades.csv           — every trade record
   3. summary.txt          — human-readable performance report
   4. equity_curve.png     — equity curve chart (overall + per sector)
+  5. asx_contrarian_report.xlsx — combined Excel workbook (trades, daily, summary)
 """
 
 import logging
@@ -182,13 +183,40 @@ def plot_equity_curve(result: BacktestResult, output_dir: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# 5. Excel — combined multi-sheet workbook
+# ---------------------------------------------------------------------------
+
+def write_excel_report(result: BacktestResult, output_dir: str) -> str:
+    """Write a multi-sheet Excel workbook with trades, snapshots, and summary."""
+    dirp = _ensure_dir(output_dir)
+    path = dirp / "asx_contrarian_report.xlsx"
+
+    trades_df = pd.DataFrame([t.__dict__ for t in result.trades])
+    daily_df = pd.DataFrame([s.__dict__ for s in result.snapshots])
+
+    overall = compute_overall_metrics(result)
+    by_sector = compute_sector_metrics(result)
+    all_metrics = [overall] + list(by_sector.values())
+    summary_df = pd.DataFrame([m.__dict__ for m in all_metrics])
+
+    with pd.ExcelWriter(path, engine="openpyxl") as writer:
+        trades_df.to_excel(writer, sheet_name="Trades", index=False)
+        daily_df.to_excel(writer, sheet_name="Daily Portfolio", index=False)
+        summary_df.to_excel(writer, sheet_name="Summary", index=False)
+
+    logger.info("Wrote %s (3 sheets)", path)
+    return str(path)
+
+
+# ---------------------------------------------------------------------------
 # All-in-one
 # ---------------------------------------------------------------------------
 
 def generate_full_report(result: BacktestResult, output_dir: str = "output") -> None:
-    """Generate all outputs: CSVs, summary text, and equity chart."""
+    """Generate all outputs: CSVs, summary text, equity chart, and Excel workbook."""
     write_daily_csv(result, output_dir)
     write_trades_csv(result, output_dir)
     write_summary(result, output_dir)
+    write_excel_report(result, output_dir)
     plot_equity_curve(result, output_dir)
     logger.info("All reports written to %s/", output_dir)
