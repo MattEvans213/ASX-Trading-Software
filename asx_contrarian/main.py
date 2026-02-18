@@ -28,8 +28,8 @@ def parse_args() -> argparse.Namespace:
                    help="Upper bound for small cap (AUD)")
     p.add_argument("--mid-cap-upper", type=float, default=7e9,
                    help="Upper bound for mid cap (AUD)")
-    p.add_argument("--stocks-per-sector", type=int, default=3,
-                   help="Worst-N performers to buy per sector")
+    p.add_argument("--stocks-per-sector", type=int, default=10,
+                   help="Worst-N performers to buy (small cap only)")
 
     # Backtest params
     p.add_argument("--capital", type=float, default=100_000,

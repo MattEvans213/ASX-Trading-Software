@@ -95,10 +95,9 @@ def write_summary(result: BacktestResult, output_dir: str) -> str:
     lines.append(f"Starting Capital:  ${result.bt_cfg.starting_capital:,.2f}")
     lines.append(f"Transaction Cost:  {result.bt_cfg.transaction_cost_pct * 100:.2f} % per trade")
     lines.append(f"Slippage:          {result.bt_cfg.slippage_pct * 100:.3f} %")
-    lines.append(f"Stocks / Sector:   {result.strat_cfg.stocks_per_sector}")
-    lines.append(f"Cap Thresholds:    small < ${result.strat_cfg.small_cap_upper / 1e9:.1f}B"
-                 f" | mid < ${result.strat_cfg.mid_cap_upper / 1e9:.1f}B"
-                 f" | large ≥ ${result.strat_cfg.mid_cap_upper / 1e9:.1f}B")
+    lines.append(f"Stocks per day:    {result.strat_cfg.stocks_per_sector}")
+    lines.append(f"Universe:          Small cap only (< ${result.strat_cfg.small_cap_upper / 1e9:.1f}B)")
+    lines.append(f"Allocation:        {100 / result.strat_cfg.stocks_per_sector:.0f} % per stock")
     lines.append("")
     lines.append("-" * 60)
     lines.append("OVERALL PERFORMANCE")
@@ -140,39 +139,20 @@ def plot_equity_curve(result: BacktestResult, output_dir: str) -> str:
     snap_df["date"] = pd.to_datetime(snap_df["date"])
     snap_df.sort_values("date", inplace=True)
 
-    # Build cumulative sector equity curves
     starting = result.bt_cfg.starting_capital
-    sector_start = starting / 3
 
-    snap_df["small_cap_equity"] = sector_start + snap_df["small_cap_value"].cumsum()
-    snap_df["mid_cap_equity"] = sector_start + snap_df["mid_cap_value"].cumsum()
-    snap_df["large_cap_equity"] = sector_start + snap_df["large_cap_value"].cumsum()
+    fig, ax1 = plt.subplots(1, 1, figsize=(14, 6))
 
-    fig, axes = plt.subplots(2, 1, figsize=(14, 10), sharex=True)
-
-    # ── Top panel: overall equity ──
-    ax1 = axes[0]
     ax1.plot(snap_df["date"], snap_df["portfolio_value"], linewidth=1.2, color="#1f77b4")
     ax1.axhline(starting, linestyle="--", color="grey", linewidth=0.7, label="Starting Capital")
-    ax1.set_title("Overall Portfolio Equity Curve", fontsize=13)
+    ax1.set_title("Small-Cap Contrarian — Portfolio Equity Curve", fontsize=13)
     ax1.set_ylabel("Portfolio Value ($)")
+    ax1.set_xlabel("Date")
     ax1.legend(loc="upper left")
     ax1.grid(True, alpha=0.3)
 
-    # ── Bottom panel: per-sector ──
-    ax2 = axes[1]
-    ax2.plot(snap_df["date"], snap_df["small_cap_equity"], linewidth=1, label="Small Cap")
-    ax2.plot(snap_df["date"], snap_df["mid_cap_equity"], linewidth=1, label="Mid Cap")
-    ax2.plot(snap_df["date"], snap_df["large_cap_equity"], linewidth=1, label="Large Cap")
-    ax2.axhline(sector_start, linestyle="--", color="grey", linewidth=0.7)
-    ax2.set_title("Equity Curve by Sector", fontsize=13)
-    ax2.set_ylabel("Sector Value ($)")
-    ax2.set_xlabel("Date")
-    ax2.legend(loc="upper left")
-    ax2.grid(True, alpha=0.3)
-
-    ax2.xaxis.set_major_locator(mdates.YearLocator())
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax1.xaxis.set_major_locator(mdates.YearLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
 
     plt.tight_layout()
     path = dirp / "equity_curve.png"

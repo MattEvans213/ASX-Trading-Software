@@ -3,11 +3,10 @@ Core backtesting engine for the ASX contrarian strategy.
 
 Simulation loop:
   For each trading day t:
-    1. Compute daily returns for all tradeable stocks.
-    2. Within each cap bucket, pick the N worst performers.
-    3. Allocate 1/3 of portfolio to each bucket, equally split among N stocks.
-    4. "Buy" at the close of day t  (apply slippage + transaction cost).
-    5. "Sell" at the *simulated* price 5 min after next open of day t+1.
+    1. Compute daily returns for all tradeable small-cap stocks (<$1B).
+    2. Pick the 10 worst performers — each receives 10 % of the portfolio.
+    3. "Buy" at the close of day t  (apply slippage + transaction cost).
+    4. "Sell" at the *simulated* price 5 min after next open of day t+1.
 
 Because yfinance only provides daily OHLCV, the 5-min-after-open exit is
 approximated as the **open price of the next trading day** — this is the

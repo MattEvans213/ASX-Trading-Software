@@ -19,16 +19,15 @@ class StrategyConfig:
     # Anything above mid_cap_upper is large cap.
 
     # --- Position sizing ---
-    stocks_per_sector: int = 3                    # Worst N performers per cap bucket
-    # Portfolio weight is split equally across the 3 sectors, then equally
-    # among stocks_per_sector within each sector.
+    stocks_per_sector: int = 10                   # Worst N performers per cap bucket
+    # 100 % of portfolio allocated to small caps; 10 % per stock.
 
     # --- Holding period ---
     hold_minutes_after_open: int = 5              # Sell 5 min after next open
 
-    # --- Sector labels (do not change order without updating engine logic) ---
+    # --- Sector labels ---
     sector_labels: List[str] = field(
-        default_factory=lambda: ["small_cap", "mid_cap", "large_cap"]
+        default_factory=lambda: ["small_cap"]
     )
 
 
